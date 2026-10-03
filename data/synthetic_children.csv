@@ -1,0 +1,9 @@
+child_id,name,age,medical_needs,behavioral_needs,educational_needs,emotional_needs,physical_needs
+C001,Aarav,6,3,7,5,8,2
+C002,Meera,9,8,4,6,5,7
+C003,Rohan,4,2,9,3,6,4
+C004,Priya,12,6,3,8,4,5
+C005,Kabir,7,9,5,4,7,8
+C006,Ananya,10,4,6,7,9,3
+C007,Vivaan,3,7,8,2,5,6
+C008,Diya,8,5,2,9,3,9
