@@ -43,10 +43,10 @@ def generate_explanation(score_row: dict) -> str:
         "  2. Which areas are well‑matched.\n"
         "  3. Where gaps exist and what support might help.\n\n"
         f"Scores: {score_row}\n\n"
-        "Keep the explanation under 120 words."
-    )
-
-    client = _get_client()
+    try:
+        client = _get_client()
+    except Exception as exc:
+        return f"[Gemini unavailable] {exc}"
 
     for model in _MODELS:
         for attempt in range(1, _MAX_RETRIES + 1):
