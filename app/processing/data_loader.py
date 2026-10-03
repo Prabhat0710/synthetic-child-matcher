@@ -26,3 +26,8 @@ def load_family_data(csv_path: str) -> pd.DataFrame:
     """Load family data (capacity information)."""
     full_path = _resolve_path(csv_path)
     return pd.read_csv(full_path)
+
+def save_family_data(df: pd.DataFrame, csv_path: str = "data/families.csv"):
+    """Save updated family data back to the CSV."""
+    full_path = _resolve_path(csv_path)
+    df.to_csv(full_path, index=False)
