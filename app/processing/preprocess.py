@@ -21,14 +21,9 @@ def compute_child_needs(children_df: pd.DataFrame) -> pd.DataFrame:
 
     needs = children_df[["child_id"] + need_cols].copy()
 
-    # Min‑max normalise each need column to 0‑1
+    # Static normalise each need column to 0-1 (assuming 1-10 scale)
     for col in need_cols:
-        col_min = needs[col].min()
-        col_max = needs[col].max()
-        if col_max - col_min > 0:
-            needs[col] = (needs[col] - col_min) / (col_max - col_min)
-        else:
-            needs[col] = 0.0
+        needs[col] = needs[col] / 10.0
 
     return needs
 
@@ -53,11 +48,6 @@ def compute_family_capacity(families_df: pd.DataFrame) -> pd.DataFrame:
     capacity = families_df[["family_id"] + cap_cols].copy()
 
     for col in cap_cols:
-        col_min = capacity[col].min()
-        col_max = capacity[col].max()
-        if col_max - col_min > 0:
-            capacity[col] = (capacity[col] - col_min) / (col_max - col_min)
-        else:
-            capacity[col] = 0.0
+        capacity[col] = capacity[col] / 10.0
 
     return capacity
