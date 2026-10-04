@@ -111,10 +111,19 @@ def render(scores_df, families_df, current_user_id):
             with cols[1]:
                 st.write("**AI Match Analyst Insight:**")
                 existing_exp = get_explanation(row['child_id'], row['family_id'])
+                
+                # Do not display if it's an old cached error
+                if existing_exp and "[Gemini" in existing_exp:
+                    existing_exp = None
+                    
                 if existing_exp:
                     st.info(existing_exp)
                 else:
-                    with st.spinner("Generating insights..."):
-                        exp = generate_explanation(row.to_dict())
-                        save_explanation(row['child_id'], row['family_id'], exp)
-                        st.info(exp)
+                    if st.button("✨ Generate AI Insight", key=f"gen_{row['child_id']}"):
+                        with st.spinner("Analyzing match..."):
+                            exp = generate_explanation(row.to_dict())
+                            if "[Gemini" not in exp:
+                                save_explanation(row['child_id'], row['family_id'], exp)
+                                st.rerun()
+                            else:
+                                st.error(exp)
