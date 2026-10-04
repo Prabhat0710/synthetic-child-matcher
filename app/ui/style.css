@@ -12,13 +12,11 @@ h1, h2, h3 {
 
 /* 3. Style the Sidebar */
 [data-testid="stSidebar"] {
-    background-color: #f8fafc;
     border-right: 1px solid #e2e8f0;
 }
 
 /* 4. Beautiful Cards for the Expanders */
 [data-testid="stExpander"] {
-    background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     border: 1px solid #f1f5f9 !important;
