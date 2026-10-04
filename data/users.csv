@@ -1,2 +1,4 @@
 username,password,role,family_id
 admin,admin123,Admin,
+Prabhat,12345,Parent,F001
+Prabhat Singh,123456,Parent,F002

@@ -210,10 +210,14 @@ def get_parent_invitations(parent_id: str) -> pd.DataFrame:
     from app.db.database import get_parent_invitations as db_get_invitations
     return db_get_invitations(parent_id)
 
+def get_all_invitations() -> pd.DataFrame:
+    from app.db.database import get_all_invitations as db_get_all_invites
+    return db_get_all_invites()
+
 def update_invitation(invitation_id: str, status: str) -> bool:
     """Update the status of an invitation (e.g., 'accepted', 'declined')."""
-    # TODO: Update invitation status in DB
-    pass
+    from app.db.database import update_invitation_status as db_update_status
+    return db_update_status(invitation_id, status)
 
 
 # ==========================================

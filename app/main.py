@@ -64,6 +64,16 @@ if st.session_state.role:
             fam_name = families_df[families_df['family_id'] == st.session_state.user_id]['family_name'].iloc[0]
             st.caption(f"Profile: {fam_name}")
             
+        if st.session_state.role == "Admin":
+            st.divider()
+            st.subheader("Data Management")
+            uploaded_file = st.file_uploader("Upload Children (CSV)", type="csv")
+            if uploaded_file is not None:
+                with open("data/synthetic_children.csv", "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                st.success("Children data updated successfully!")
+                st.cache_data.clear()
+                
         if st.button("Log out", use_container_width=True):
             st.session_state.role = None
             st.session_state.user_id = None

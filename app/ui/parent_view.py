@@ -134,11 +134,33 @@ def render(scores_df, families_df, current_user_id):
             if invites is None or invites.empty:
                 st.write("No invitations from the Admin yet. Please check back later!")
             else:
+                @st.dialog("Confirm Final Decision")
+                def confirm_action(invitation_id, status, child_id):
+                    st.warning(f"Are you sure you want to **{status}** the match for Child {child_id}?")
+                    st.write("This decision will be sent to the agency admin.")
+                    
+                    c1, c2 = st.columns(2)
+                    if c1.button("Yes, confirm", type="primary", use_container_width=True):
+                        api.update_invitation(invitation_id, status)
+                        st.session_state.action_confirmed = True
+                        st.rerun()
+                    if c2.button("Cancel", use_container_width=True):
+                        st.rerun()
+
                 for idx, row in invites.iterrows():
-                    st.success(f"**Invitation!** You have been invited to review **Child {row['child_id']}**! (Status: {row['status'].title()})")
-                    cols = st.columns([1, 1, 4])
-                    cols[0].button("Accept", key=f"acc_{row['invitation_id']}", type="primary")
-                    cols[1].button("Decline", key=f"dec_{row['invitation_id']}")
+                    status = row['status'].title()
+                    inv_id = row['invitation_id']
+                    c_id = row['child_id']
+                    
+                    if status.lower() == 'pending':
+                        st.success(f"**Invitation!** You have been invited to review **Child {c_id}**! (Status: {status})")
+                        cols = st.columns([1, 1, 4])
+                        if cols[0].button("Accept", key=f"acc_{inv_id}", type="primary"):
+                            confirm_action(inv_id, 'accepted', c_id)
+                        if cols[1].button("Decline", key=f"dec_{inv_id}"):
+                            confirm_action(inv_id, 'declined', c_id)
+                    else:
+                        st.info(f"**Child {c_id}**: You have **{status}** this invitation.")
                     
         with tab_reject:
             barriers = api.get_barriers_for_parent(current_user_id)

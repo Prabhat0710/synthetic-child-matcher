@@ -118,6 +118,16 @@ def get_parent_invitations(parent_id: str) -> pd.DataFrame:
     finally:
         conn.close()
 
+def get_all_invitations() -> pd.DataFrame:
+    """Retrieve all invitations (for Admin)."""
+    conn = _get_conn()
+    try:
+        return pd.read_sql("SELECT * FROM invitations", conn)
+    except:
+        return pd.DataFrame()
+    finally:
+        conn.close()
+
 def update_invitation_status(invitation_id: str, status: str) -> bool:
     """Update invitation status."""
     conn = _get_conn()
