@@ -77,60 +77,35 @@ def render(scores_df, families_df, current_user_id):
                 st.cache_data.clear()
                 st.rerun()
 
-    st.write("Here are the children whose needs most closely align with your current capacity profile.")
-
-    # --- MATCHES DISPLAY ---
-    import app.backend.contracts as api
-    my_matches = api.get_matches_for_parent(current_user_id)
-    
-    if my_matches.empty:
-        st.info("No matches found. Ensure your capacity profile is submitted.")
-        return
-        
     st.divider()
-
-    for idx, row in my_matches.head(5).iterrows():
-        score = row['overall_score']
-        
-        if score >= 0.8:
-            emoji = "🌟"
-        elif score >= 0.6:
-            emoji = "✨"
+    
+    # --- STATUS MESSAGE ---
+    st.info("⏳ **Profile Submitted!** Waiting for Admin review and invitations.")
+    
+    # --- TABS: INVITATIONS & REJECTIONS ---
+    import app.backend.contracts as api
+    
+    tab_invite, tab_reject = st.tabs(["📨 Invitations", "🚫 Incompatible Matches (System Rejected)"])
+    
+    with tab_invite:
+        invites = api.get_parent_invitations(current_user_id)
+        if invites.empty:
+            st.write("No invitations from the Admin yet. Please check back later!")
         else:
-            emoji = "💡"
-            
-        with st.expander(f"{emoji} Match with Child {row['child_id']} - Score: {score:.0%}"):
-            st.progress(score, text=f"Overall Compatibility: {score:.0%}")
-            
-            cols = st.columns([1, 2])
-            with cols[0]:
-                st.write("**Capacity Analysis:**")
-                for col in ['gap_medical', 'gap_behavioral', 'gap_educational', 'gap_emotional', 'gap_physical']:
-                    val = row[col]
-                    category = col.replace('gap_', '').title()
-                    if val > 0.2: 
-                        st.markdown(f"- {category}: ⚠️ *Gap ({val:.1f})*")
-                    elif val > 0:
-                        st.markdown(f"- {category}: 🟡 *Slight Gap ({val:.1f})*")
-                    else:
-                        st.markdown(f"- {category}: ✅ *Covered*")
-                        
-            with cols[1]:
-                st.write("**AI Match Analyst Insight:**")
-                existing_exp = get_explanation(row['child_id'], row['parent_id'])
+            for idx, row in invites.iterrows():
+                st.success(f"**Invitation!** You have been invited to review **Child {row['child_id']}**! (Status: {row['status'].title()})")
+                cols = st.columns([1, 1, 4])
+                cols[0].button("Accept", key=f"acc_{row['invitation_id']}", type="primary")
+                cols[1].button("Decline", key=f"dec_{row['invitation_id']}")
                 
-                # Do not display if it's an old cached error
-                if existing_exp and "[Gemini" in existing_exp:
-                    existing_exp = None
-                    
-                if existing_exp:
-                    st.info(existing_exp)
-                else:
-                    if st.button("✨ Generate AI Insight", key=f"gen_{row['child_id']}"):
-                        with st.spinner("Analyzing match..."):
-                            exp = generate_explanation(row.to_dict())
-                            if "[Gemini" not in exp:
-                                save_explanation(row['child_id'], row['parent_id'], exp)
-                                st.rerun()
-                            else:
-                                st.error(exp)
+    with tab_reject:
+        barriers = api.get_barriers_for_parent(current_user_id)
+        if barriers.empty:
+            st.write("No system rejections recorded yet.")
+        else:
+            st.write("The matching engine automatically filtered out the following children due to capacity constraints. This ensures we only present matches where you can fully support the child's needs.")
+            
+            for idx, row in barriers.iterrows():
+                with st.expander(f"Child {row['child_id']} - {row['severity']} Barrier"):
+                    st.error(f"**Category:** {row['category'].title()}")
+                    st.write(f"**Reason:** {row['reason']}")

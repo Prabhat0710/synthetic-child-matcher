@@ -6,20 +6,19 @@ header {visibility: hidden;}
 /* 2. Global Typography and Spacing */
 h1, h2, h3 {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    color: #1f2937;
     font-weight: 700 !important;
 }
 
 /* 3. Style the Sidebar */
 [data-testid="stSidebar"] {
-    border-right: 1px solid #e2e8f0;
+    border-right: 1px solid #333333;
 }
 
 /* 4. Beautiful Cards for the Expanders */
 [data-testid="stExpander"] {
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    border: 1px solid #f1f5f9 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border: 1px solid #333333 !important;
     margin-bottom: 1rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

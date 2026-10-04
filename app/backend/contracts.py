@@ -215,3 +215,8 @@ def get_barrier_insights() -> pd.DataFrame:
     """Retrieve system-wide aggregated analytics on common barriers/gaps."""
     # TODO: Run aggregation queries on barriers table for Admin Dashboard
     pass
+
+def get_barriers_for_parent(parent_id: str) -> pd.DataFrame:
+    """Retrieve all generated barriers/rejections for a parent's matches."""
+    from app.db.database import get_barriers_for_parent as db_get_barriers
+    return db_get_barriers(parent_id)
