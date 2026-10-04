@@ -110,8 +110,23 @@ def generate_matches(parent_id: str) -> bool:
         
         conn = _get_conn()
         
+        # Ensure approved_matches table exists
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS approved_matches (
+                match_id TEXT PRIMARY KEY,
+                family_id TEXT NOT NULL,
+                child_id TEXT NOT NULL,
+                overall_score REAL,
+                gap_medical REAL,
+                gap_behavioral REAL,
+                gap_educational REAL,
+                gap_emotional REAL,
+                gap_physical REAL
+            )
+        ''')
+        
         # Clear previous runs for this parent
-        conn.execute("DELETE FROM matches WHERE parent_id = ?", (parent_id,))
+        conn.execute("DELETE FROM approved_matches WHERE family_id = ?", (parent_id,))
         conn.execute("DELETE FROM barriers WHERE parent_id = ?", (parent_id,))
         
         valid_matches = []
@@ -147,8 +162,8 @@ def generate_matches(parent_id: str) -> bool:
         if valid_matches:
             conn.executemany(
                 """
-                INSERT INTO matches 
-                (match_id, parent_id, child_id, overall_score, gap_medical, gap_behavioral, gap_educational, gap_emotional, gap_physical) 
+                INSERT INTO approved_matches 
+                (match_id, family_id, child_id, overall_score, gap_medical, gap_behavioral, gap_educational, gap_emotional, gap_physical) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 valid_matches
@@ -166,7 +181,7 @@ def get_matches_for_parent(parent_id: str) -> pd.DataFrame:
     """Retrieve the ranked list of matching children for a parent."""
     conn = _get_conn()
     try:
-        return pd.read_sql("SELECT * FROM matches WHERE parent_id = ? ORDER BY overall_score DESC", conn, params=(parent_id,))
+        return pd.read_sql("SELECT * FROM approved_matches WHERE family_id = ? ORDER BY overall_score DESC", conn, params=(parent_id,))
     except:
         return pd.DataFrame()
     finally:
@@ -176,7 +191,7 @@ def get_matches_for_child(child_id: str) -> pd.DataFrame:
     """Retrieve the ranked list of matching parents for a specific child (Admin use)."""
     conn = _get_conn()
     try:
-        return pd.read_sql("SELECT * FROM matches WHERE child_id = ? ORDER BY overall_score DESC", conn, params=(child_id,))
+        return pd.read_sql("SELECT * FROM approved_matches WHERE child_id = ? ORDER BY overall_score DESC", conn, params=(child_id,))
     except:
         return pd.DataFrame()
     finally:
@@ -188,8 +203,8 @@ def get_matches_for_child(child_id: str) -> pd.DataFrame:
 
 def create_invitation(parent_id: str, child_id: str, match_id: str) -> bool:
     """Create a new invitation for a parent to review a matched child."""
-    # TODO: Insert new invitation record into DB
-    pass
+    from app.db.database import create_invitation as db_create_invitation
+    return db_create_invitation(parent_id, child_id, match_id)
 
 def get_parent_invitations(parent_id: str) -> pd.DataFrame:
     from app.db.database import get_parent_invitations as db_get_invitations
