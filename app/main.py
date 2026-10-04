@@ -56,27 +56,70 @@ with st.sidebar:
     if not st.session_state.role:
         st.write("Please log in to continue.")
         
-        with st.form("login_form"):
-            username = st.text_input("Username / ID", placeholder="e.g. sharma01")
-            password = st.text_input("Password", type="password", placeholder="Enter password")
-            submitted = st.form_submit_button("Log In", type="primary", use_container_width=True)
-            
-            if submitted:
-                if not username or not password:
-                    st.error("Please enter both username and password.")
-                else:
-                    # Validate against users.csv
-                    import pandas as pd
-                    users_df = pd.read_csv("data/users.csv")
-                    user_match = users_df[(users_df['username'] == username) & (users_df['password'] == password)]
-                    
-                    if user_match.empty:
-                        st.error("❌ Invalid username or password.")
+        tab1, tab2 = st.tabs(["Log In", "Sign Up (New Parent)"])
+        
+        with tab1:
+            with st.form("login_form"):
+                username = st.text_input("Username / ID", placeholder="e.g. sharma01")
+                password = st.text_input("Password", type="password", placeholder="Enter password")
+                submitted = st.form_submit_button("Log In", type="primary", use_container_width=True)
+                
+                if submitted:
+                    if not username or not password:
+                        st.error("Please enter both username and password.")
                     else:
-                        user = user_match.iloc[0]
-                        st.session_state.role = user['role']
-                        st.session_state.user_id = user['family_id'] if user['role'] == 'Parent' else 'admin'
-                        st.rerun()
+                        import pandas as pd
+                        users_df = pd.read_csv("data/users.csv")
+                        user_match = users_df[(users_df['username'] == username) & (users_df['password'] == password)]
+                        
+                        if user_match.empty:
+                            st.error("❌ Invalid username or password.")
+                        else:
+                            user = user_match.iloc[0]
+                            st.session_state.role = user['role']
+                            st.session_state.user_id = user['family_id'] if user['role'] == 'Parent' else 'admin'
+                            st.rerun()
+                            
+        with tab2:
+            with st.form("signup_form"):
+                new_username = st.text_input("New Username")
+                new_password = st.text_input("New Password", type="password")
+                new_family_name = st.text_input("Family Name", placeholder="e.g. Smith Family")
+                signup_submitted = st.form_submit_button("Sign Up", type="primary", use_container_width=True)
+                
+                if signup_submitted:
+                    if not new_username or not new_password or not new_family_name:
+                        st.error("Please fill out all fields.")
+                    else:
+                        import pandas as pd
+                        users_df = pd.read_csv("data/users.csv")
+                        if new_username in users_df['username'].values:
+                            st.error("Username already exists. Please choose another.")
+                        else:
+                            families_df = pd.read_csv("data/families.csv")
+                            # Create new family ID
+                            new_family_id = f"F{len(families_df)+1:03d}"
+                            
+                            # Add to users.csv
+                            new_user = pd.DataFrame([{"username": new_username, "password": new_password, "role": "Parent", "family_id": new_family_id}])
+                            new_user.to_csv("data/users.csv", mode='a', header=False, index=False)
+                            
+                            # Add to families.csv with 0 capacities (unanswered)
+                            new_family = pd.DataFrame([{
+                                "family_id": new_family_id, 
+                                "family_name": new_family_name, 
+                                "medical_capacity": 0, 
+                                "behavioral_capacity": 0, 
+                                "educational_capacity": 0, 
+                                "emotional_capacity": 0, 
+                                "physical_capacity": 0
+                            }])
+                            new_family.to_csv("data/families.csv", mode='a', header=False, index=False)
+                            
+                            st.success("Account created! You can now log in.")
+                            
+                            # Clear cache to load new data
+                            st.cache_data.clear()
     else:
         st.success(f"Logged in as: **{st.session_state.role}**")
         if st.session_state.role == "Parent":

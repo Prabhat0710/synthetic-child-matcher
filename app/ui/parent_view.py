@@ -5,6 +5,7 @@ from app.processing.data_loader import save_family_data
 
 # Mapping between natural language answers and capacity scores (1-10)
 ANSWER_MAP = {
+    "Not answered yet": 0,
     "Yes, absolutely / Highly prepared": 10,
     "Yes, moderately prepared": 7,
     "Somewhat prepared": 5,
@@ -26,6 +27,20 @@ def render(scores_df, families_df, current_user_id):
     family_name = family_row['family_name']
     
     st.markdown(f"### Welcome, **{family_name}**!")
+    
+    # Calculate Profile Progress
+    capacities = [
+        family_row['medical_capacity'],
+        family_row['behavioral_capacity'],
+        family_row['educational_capacity'],
+        family_row['emotional_capacity'],
+        family_row['physical_capacity']
+    ]
+    answered_count = sum(1 for c in capacities if c > 0)
+    progress_pct = int((answered_count / 5.0) * 100)
+    
+    st.progress(progress_pct, text=f"Profile Completion: {progress_pct}% ({answered_count}/5 questions answered)")
+    st.write("")
     
     # --- INTERACTIVE QUESTIONNAIRE ---
     with st.expander("📝 Update Your Support Capacity (Questionnaire)", expanded=False):

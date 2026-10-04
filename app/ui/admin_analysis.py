@@ -12,6 +12,36 @@ def render(scores_df, children_df, families_df):
     col3.metric("Possible Pairings Evaluated", len(scores_df))
 
     st.divider()
+    
+    st.subheader("Parent Onboarding Status")
+    st.write("Track how many families have completed their capacity questionnaires.")
+    
+    # Calculate progress for each family
+    def calc_progress(row):
+        caps = [row['medical_capacity'], row['behavioral_capacity'], row['educational_capacity'], row['emotional_capacity'], row['physical_capacity']]
+        return (sum(1 for c in caps if c > 0) / 5.0) * 100
+
+    families_status = families_df.copy()
+    families_status['Completion'] = families_status.apply(calc_progress, axis=1)
+    
+    st.dataframe(
+        families_status[['family_id', 'family_name', 'Completion']],
+        column_config={
+            "family_id": "Family ID",
+            "family_name": "Family Name",
+            "Completion": st.column_config.ProgressColumn(
+                "Profile Completion",
+                help="Percentage of the questionnaire completed",
+                format="%d%%",
+                min_value=0,
+                max_value=100,
+            ),
+        },
+        hide_index=True,
+        use_container_width=True
+    )
+
+    st.divider()
 
     # Gap Analysis Chart
     st.subheader("System-Wide Gap Analysis")
