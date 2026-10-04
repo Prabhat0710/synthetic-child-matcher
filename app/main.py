@@ -8,10 +8,13 @@ import streamlit as st
 from app.processing.data_loader import load_child_data, load_family_data
 from app.processing.preprocess import compute_child_needs, compute_family_capacity
 from app.processing.matcher import compute_compatibility_scores
-from app.db.database import save_scores
+from app.db.database import save_scores, init_db
 from app.ui import parent_view, admin_analysis
 
 st.set_page_config(page_title="Child Matcher", layout="wide", page_icon="🤝")
+
+# Ensure DB is initialized
+init_db()
 
 # --- INJECT CUSTOM CSS ---
 def load_css():
