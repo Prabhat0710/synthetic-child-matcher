@@ -16,8 +16,27 @@ def render(scores_df, families_df, current_user_id):
     
     # Initialize session state for answers if not present
     state_key = f"answers_{current_user_id}"
+    ANSWERS_FILE = "data/parent_answers.json"
+    
     if state_key not in st.session_state:
-        st.session_state[state_key] = {}
+        import json
+        import os
+        
+        if os.path.exists(ANSWERS_FILE):
+            with open(ANSWERS_FILE, 'r') as f:
+                try:
+                    all_answers = json.load(f)
+                except json.JSONDecodeError:
+                    all_answers = {}
+                    
+            if current_user_id in all_answers:
+                st.session_state[state_key] = all_answers[current_user_id]
+                # If they have saved answers in the file, they have submitted before
+                st.session_state[f"submitted_{current_user_id}"] = True
+            else:
+                st.session_state[state_key] = {}
+        else:
+            st.session_state[state_key] = {}
         
     answers = st.session_state[state_key]
     
@@ -75,6 +94,22 @@ def render(scores_df, families_df, current_user_id):
             for cap, scores in cap_scores.items():
                 # Average the scores, default to 0 if none answered
                 profile_data[cap] = int(sum(scores)/len(scores)) if scores else 0
+                
+            # Save raw answers to JSON so they persist across logins
+            import json
+            import os
+            
+            all_ans = {}
+            if os.path.exists(ANSWERS_FILE):
+                with open(ANSWERS_FILE, 'r') as f:
+                    try:
+                        all_ans = json.load(f)
+                    except json.JSONDecodeError:
+                        pass
+            
+            all_ans[current_user_id] = answers
+            with open(ANSWERS_FILE, 'w') as f:
+                json.dump(all_ans, f)
                 
             import app.backend.contracts as api
             api.save_parent_profile(current_user_id, profile_data)
