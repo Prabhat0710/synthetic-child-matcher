@@ -86,3 +86,37 @@ def get_matches_for_child(child_id: str) -> pd.DataFrame:
     """Retrieve the ranked list of matching parents for a specific child (Admin use)."""
     # TODO: Query matches table for a specific child
     pass
+
+# ==========================================
+# Invitations
+# ==========================================
+
+def create_invitation(parent_id: str, child_id: str, match_id: str) -> bool:
+    """Create a new invitation for a parent to review a matched child."""
+    # TODO: Insert new invitation record into DB
+    pass
+
+def get_parent_invitations(parent_id: str) -> pd.DataFrame:
+    """Retrieve all invitations (and their statuses) sent to a specific parent."""
+    # TODO: Query invitations table by parent_id
+    pass
+
+def update_invitation(invitation_id: str, status: str) -> bool:
+    """Update the status of an invitation (e.g., 'accepted', 'declined')."""
+    # TODO: Update invitation status in DB
+    pass
+
+
+# ==========================================
+# Barriers
+# ==========================================
+
+def get_barriers(match_id: str) -> pd.DataFrame:
+    """Retrieve specific rejection reasons/barriers for a given match evaluation."""
+    # TODO: Query barriers table for a specific match
+    pass
+
+def get_barrier_insights() -> pd.DataFrame:
+    """Retrieve system-wide aggregated analytics on common barriers/gaps."""
+    # TODO: Run aggregation queries on barriers table for Admin Dashboard
+    pass
