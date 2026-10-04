@@ -65,27 +65,108 @@ def get_child(child_id: str) -> Optional[Dict[str, Any]]:
 # ==========================================
 # Matching
 # ==========================================
+import uuid
+from app.db.database import _get_conn, save_barrier
+from app.processing.data_loader import load_child_data, load_family_data
+from app.processing.preprocess import compute_child_needs, compute_family_capacity
+from app.processing.matcher import compute_compatibility_scores
 
 def generate_matches(parent_id: str) -> bool:
     """
     Run the core matching engine for a specific parent against all children.
-    - Applies hard constraints
+    - Applies hard constraints (e.g. gaps >= 0.5)
     - Generates barriers for rejections
     - Calculates weighted compatibility scores
-    - Saves results to the DB
+    - Saves valid matches to the DB
     """
-    # TODO: Implement core matching logic
-    pass
+    try:
+        # 1. Load Data
+        children_df = load_child_data("data/synthetic_children.csv")
+        families_df = load_family_data("data/families.csv")
+        
+        parent_df = families_df[families_df['family_id'] == parent_id]
+        if parent_df.empty:
+            return False
+            
+        needs_df = compute_child_needs(children_df)
+        capacity_df = compute_family_capacity(parent_df)
+        
+        # 2. Compute raw scores & gaps
+        scores_df = compute_compatibility_scores(needs_df, capacity_df)
+        
+        conn = _get_conn()
+        
+        # Clear previous runs for this parent
+        conn.execute("DELETE FROM matches WHERE parent_id = ?", (parent_id,))
+        conn.execute("DELETE FROM barriers WHERE parent_id = ?", (parent_id,))
+        
+        valid_matches = []
+        categories = ['medical', 'behavioral', 'educational', 'emotional', 'physical']
+        
+        # 3. Apply Constraints & Generate Barriers
+        for _, row in scores_df.iterrows():
+            child_id = row['child_id']
+            rejected = False
+            
+            for cat in categories:
+                gap = row[f'gap_{cat}']
+                # HARD CONSTRAINT: If any need exceeds capacity by 0.5 (5 points out of 10), it's a severe barrier.
+                if gap >= 0.5:
+                    save_barrier(
+                        parent_id=parent_id,
+                        child_id=child_id,
+                        category=cat,
+                        reason=f"Insufficient capacity for high {cat} needs.",
+                        severity="Critical"
+                    )
+                    rejected = True
+            
+            # 4. Save Valid Matches
+            if not rejected:
+                match_id = str(uuid.uuid4())
+                valid_matches.append((
+                    match_id, parent_id, child_id, row['overall_score'],
+                    row['gap_medical'], row['gap_behavioral'], row['gap_educational'],
+                    row['gap_emotional'], row['gap_physical']
+                ))
+                
+        if valid_matches:
+            conn.executemany(
+                """
+                INSERT INTO matches 
+                (match_id, parent_id, child_id, overall_score, gap_medical, gap_behavioral, gap_educational, gap_emotional, gap_physical) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                valid_matches
+            )
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error in matching engine: {e}")
+        return False
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 def get_matches_for_parent(parent_id: str) -> pd.DataFrame:
-    """Retrieve the ranked list of matching children (and barriers) for a parent."""
-    # TODO: Query matches table for a specific parent
-    pass
+    """Retrieve the ranked list of matching children for a parent."""
+    conn = _get_conn()
+    try:
+        return pd.read_sql("SELECT * FROM matches WHERE parent_id = ? ORDER BY overall_score DESC", conn, params=(parent_id,))
+    except:
+        return pd.DataFrame()
+    finally:
+        conn.close()
 
 def get_matches_for_child(child_id: str) -> pd.DataFrame:
     """Retrieve the ranked list of matching parents for a specific child (Admin use)."""
-    # TODO: Query matches table for a specific child
-    pass
+    conn = _get_conn()
+    try:
+        return pd.read_sql("SELECT * FROM matches WHERE child_id = ? ORDER BY overall_score DESC", conn, params=(child_id,))
+    except:
+        return pd.DataFrame()
+    finally:
+        conn.close()
 
 # ==========================================
 # Invitations
