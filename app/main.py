@@ -13,6 +13,15 @@ from app.ui import parent_view, admin_analysis
 
 st.set_page_config(page_title="Child Matcher", layout="wide", page_icon="🤝")
 
+# --- INJECT CUSTOM CSS ---
+def load_css():
+    css_path = Path(__file__).parent / "ui" / "style.css"
+    if css_path.exists():
+        with open(css_path) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+load_css()
+
 # --- DATA PIPELINE ---
 @st.cache_data
 def get_data():
