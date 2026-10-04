@@ -59,25 +59,32 @@ def render(scores_df, families_df, current_user_id):
             )
             
             if st.form_submit_button("Save Answers & Update Matches", type="primary"):
-                # Update the DataFrame
-                families_df.loc[families_df['family_id'] == current_user_id, 'medical_capacity'] = ANSWER_MAP[med_ans]
-                families_df.loc[families_df['family_id'] == current_user_id, 'behavioral_capacity'] = ANSWER_MAP[beh_ans]
-                families_df.loc[families_df['family_id'] == current_user_id, 'educational_capacity'] = ANSWER_MAP[edu_ans]
-                families_df.loc[families_df['family_id'] == current_user_id, 'emotional_capacity'] = ANSWER_MAP[emo_ans]
-                families_df.loc[families_df['family_id'] == current_user_id, 'physical_capacity'] = ANSWER_MAP[phy_ans]
+                # Use Backend Contracts
+                import app.backend.contracts as api
                 
-                # Save to CSV and clear cache so the matching engine re-runs
-                save_family_data(families_df)
+                profile_data = {
+                    'medical_capacity': ANSWER_MAP[med_ans],
+                    'behavioral_capacity': ANSWER_MAP[beh_ans],
+                    'educational_capacity': ANSWER_MAP[edu_ans],
+                    'emotional_capacity': ANSWER_MAP[emo_ans],
+                    'physical_capacity': ANSWER_MAP[phy_ans]
+                }
+                
+                # Save and trigger the engine
+                api.save_parent_profile(current_user_id, profile_data)
+                api.submit_parent_profile(current_user_id)
+                
                 st.cache_data.clear()
                 st.rerun()
 
     st.write("Here are the children whose needs most closely align with your current capacity profile.")
 
     # --- MATCHES DISPLAY ---
-    my_matches = scores_df[scores_df['family_id'] == current_user_id].sort_values('overall_score', ascending=False)
+    import app.backend.contracts as api
+    my_matches = api.get_matches_for_parent(current_user_id)
     
     if my_matches.empty:
-        st.info("No matches found.")
+        st.info("No matches found. Ensure your capacity profile is submitted.")
         return
         
     st.divider()
@@ -110,7 +117,7 @@ def render(scores_df, families_df, current_user_id):
                         
             with cols[1]:
                 st.write("**AI Match Analyst Insight:**")
-                existing_exp = get_explanation(row['child_id'], row['family_id'])
+                existing_exp = get_explanation(row['child_id'], row['parent_id'])
                 
                 # Do not display if it's an old cached error
                 if existing_exp and "[Gemini" in existing_exp:
@@ -123,7 +130,7 @@ def render(scores_df, families_df, current_user_id):
                         with st.spinner("Analyzing match..."):
                             exp = generate_explanation(row.to_dict())
                             if "[Gemini" not in exp:
-                                save_explanation(row['child_id'], row['family_id'], exp)
+                                save_explanation(row['child_id'], row['parent_id'], exp)
                                 st.rerun()
                             else:
                                 st.error(exp)

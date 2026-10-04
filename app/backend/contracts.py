@@ -30,21 +30,35 @@ def logout_user() -> bool:
 # ==========================================
 # Parent
 # ==========================================
+from app.processing.data_loader import load_family_data, save_family_data
 
 def get_parent(parent_id: str) -> Optional[Dict[str, Any]]:
     """Retrieve a parent's full profile and current capacity."""
-    # TODO: Fetch parent row from data/families.csv or DB
-    pass
+    df = load_family_data("data/families.csv")
+    parent_df = df[df['family_id'] == parent_id]
+    if not parent_df.empty:
+        return parent_df.iloc[0].to_dict()
+    return None
 
 def save_parent_profile(parent_id: str, profile_data: Dict[str, Any]) -> bool:
     """Save a draft of the parent's questionnaire responses/capacities."""
-    # TODO: Update DB with partial answers
-    pass
+    try:
+        df = load_family_data("data/families.csv")
+        idx = df[df['family_id'] == parent_id].index
+        if not idx.empty:
+            for key, val in profile_data.items():
+                if key in df.columns:
+                    df.at[idx[0], key] = val
+            save_family_data(df, "data/families.csv")
+            return True
+        return False
+    except:
+        return False
 
 def submit_parent_profile(parent_id: str) -> bool:
     """Lock in the parent's profile and trigger the matching engine."""
-    # TODO: Validate profile, update status to submitted, call generate_matches()
-    pass
+    # Run the engine!
+    return generate_matches(parent_id)
 
 
 # ==========================================
