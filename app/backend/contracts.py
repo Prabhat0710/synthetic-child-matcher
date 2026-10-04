@@ -192,9 +192,8 @@ def create_invitation(parent_id: str, child_id: str, match_id: str) -> bool:
     pass
 
 def get_parent_invitations(parent_id: str) -> pd.DataFrame:
-    """Retrieve all invitations (and their statuses) sent to a specific parent."""
-    # TODO: Query invitations table by parent_id
-    pass
+    from app.db.database import get_parent_invitations as db_get_invitations
+    return db_get_invitations(parent_id)
 
 def update_invitation(invitation_id: str, status: str) -> bool:
     """Update the status of an invitation (e.g., 'accepted', 'declined')."""
