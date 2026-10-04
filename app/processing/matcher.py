@@ -32,6 +32,13 @@ def compute_compatibility_scores(
                  gap_medical, gap_behavioral, gap_educational,
                  gap_emotional, gap_physical
     """
+    if needs_df.empty or capacity_df.empty:
+        return pd.DataFrame(columns=[
+            "child_id", "family_id", "overall_score", 
+            "gap_medical", "gap_behavioral", "gap_educational", 
+            "gap_emotional", "gap_physical"
+        ])
+
     needs_matrix = needs_df[NEED_COLS].values      # (n_children, 5)
     cap_matrix = capacity_df[CAP_COLS].values       # (n_families, 5)
 
