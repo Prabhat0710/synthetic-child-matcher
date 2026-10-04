@@ -55,23 +55,28 @@ with st.sidebar:
     
     if not st.session_state.role:
         st.write("Please log in to continue.")
-        user_type = st.radio("Select Role", ["Parent", "Admin"])
         
-        if user_type == "Admin":
-            if st.button("Log in as Admin", type="primary", use_container_width=True):
-                st.session_state.role = "Admin"
-                st.session_state.user_id = "admin"
-                st.rerun()
-        else:
-            family_id = st.selectbox(
-                "Select your Family", 
-                families_df['family_id'].tolist(), 
-                format_func=lambda x: families_df[families_df['family_id'] == x]['family_name'].iloc[0]
-            )
-            if st.button("Log in as Parent", type="primary", use_container_width=True):
-                st.session_state.role = "Parent"
-                st.session_state.user_id = family_id
-                st.rerun()
+        with st.form("login_form"):
+            username = st.text_input("Username / ID", placeholder="e.g. sharma01")
+            password = st.text_input("Password", type="password", placeholder="Enter password")
+            submitted = st.form_submit_button("Log In", type="primary", use_container_width=True)
+            
+            if submitted:
+                if not username or not password:
+                    st.error("Please enter both username and password.")
+                else:
+                    # Validate against users.csv
+                    import pandas as pd
+                    users_df = pd.read_csv("data/users.csv")
+                    user_match = users_df[(users_df['username'] == username) & (users_df['password'] == password)]
+                    
+                    if user_match.empty:
+                        st.error("❌ Invalid username or password.")
+                    else:
+                        user = user_match.iloc[0]
+                        st.session_state.role = user['role']
+                        st.session_state.user_id = user['family_id'] if user['role'] == 'Parent' else 'admin'
+                        st.rerun()
     else:
         st.success(f"Logged in as: **{st.session_state.role}**")
         if st.session_state.role == "Parent":
