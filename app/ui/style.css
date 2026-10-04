@@ -1,7 +1,7 @@
 /* 1. Hide default Streamlit branding for a cleaner "app" look */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
-header {visibility: hidden;}
+.stDeployButton {display: none;}
 
 /* 2. Global Typography and Spacing */
 h1, h2, h3 {
