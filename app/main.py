@@ -42,21 +42,67 @@ def get_data():
 
 children_df, families_df, scores_df = get_data()
 
-# --- AUTHENTICATION STATE ---
+# --- AUTHENTICATION & ROUTING STATE ---
+if 'page' not in st.session_state:
+    st.session_state.page = "home"
 if 'role' not in st.session_state:
     st.session_state.role = None
 if 'user_id' not in st.session_state:
     st.session_state.user_id = None
 
-# --- SIDEBAR NAV & LOGIN ---
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=50)
-    st.title("Access Portal")
+# If logged in, force page to app
+if st.session_state.role:
+    st.session_state.page = "app"
+
+# --- SIDEBAR (Only for logged-in users) ---
+if st.session_state.role:
+    with st.sidebar:
+        st.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=50)
+        st.title("Care Map Portal")
+        st.success(f"Logged in as: **{st.session_state.role}**")
+        if st.session_state.role == "Parent":
+            fam_name = families_df[families_df['family_id'] == st.session_state.user_id]['family_name'].iloc[0]
+            st.caption(f"Profile: {fam_name}")
+            
+        if st.button("Log out", use_container_width=True):
+            st.session_state.role = None
+            st.session_state.user_id = None
+            st.session_state.page = "home"
+            st.rerun()
+
+# --- ROUTING ---
+if st.session_state.page == "home":
+    # 1. Hero Section
+    st.title("💙 Care Map")
+    st.markdown("## Real families. Brighter tomorrows.")
+    st.markdown("### Matching changes lives — including yours.")
+    st.markdown("We connect children with safe, loving, and permanent families. Whether you are looking to adopt, foster, or support, you are part of a bigger story.")
     
-    if not st.session_state.role:
-        st.write("Please log in to continue.")
-        
-        tab1, tab2 = st.tabs(["Log In", "Sign Up (New Parent)"])
+    st.write("")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("Welcome — Start Your Journey", type="primary", use_container_width=True):
+            st.session_state.page = "login"
+            st.rerun()
+            
+    st.write("")
+    st.divider()
+    
+    # 2. About Section
+    st.markdown("### About Care Map")
+    st.markdown("**What are we building?**")
+    st.markdown("Care Map is an intelligent, data-driven matching platform designed to bridge the gap between children in the welfare system and prospective families. By analyzing complex capacity profiles and detailed child needs, our system provides precise, actionable recommendations to welfare agencies and parents alike.")
+    st.markdown("**Why did we build it?**")
+    st.markdown("The traditional placement process can be slow, opaque, and often struggles to properly align a child's specific needs (medical, behavioral, educational) with a family's true capacity. Care Map was built to ensure safer, more stable, and longer-lasting placements by eliminating guesswork and using rigorous capability matching.")
+
+elif st.session_state.page == "login":
+    st.title("Log In or Register")
+    st.write("Join Care Map to begin the matching process.")
+    
+    # Center the login form
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        tab1, tab2 = st.tabs(["Log In", "Register as New Parent"])
         
         with tab1:
             with st.form("login_form"):
@@ -78,6 +124,7 @@ with st.sidebar:
                             user = user_match.iloc[0]
                             st.session_state.role = user['role']
                             st.session_state.user_id = user['family_id'] if user['role'] == 'Parent' else 'admin'
+                            st.session_state.page = "app"
                             st.rerun()
                             
         with tab2:
@@ -85,7 +132,7 @@ with st.sidebar:
                 new_username = st.text_input("New Username")
                 new_password = st.text_input("New Password", type="password")
                 new_family_name = st.text_input("Family Name", placeholder="e.g. Smith Family")
-                signup_submitted = st.form_submit_button("Sign Up", type="primary", use_container_width=True)
+                signup_submitted = st.form_submit_button("Register", type="primary", use_container_width=True)
                 
                 if signup_submitted:
                     if not new_username or not new_password or not new_family_name:
@@ -116,30 +163,16 @@ with st.sidebar:
                             }])
                             new_family.to_csv("data/families.csv", mode='a', header=False, index=False)
                             
-                            st.success("Account created! You can now log in.")
-                            
-                            # Clear cache to load new data
+                            st.success("Account created! You can now switch to the 'Log In' tab to access your dashboard.")
                             st.cache_data.clear()
-    else:
-        st.success(f"Logged in as: **{st.session_state.role}**")
-        if st.session_state.role == "Parent":
-            fam_name = families_df[families_df['family_id'] == st.session_state.user_id]['family_name'].iloc[0]
-            st.caption(f"Profile: {fam_name}")
-            
-        if st.button("Log out", use_container_width=True):
-            st.session_state.role = None
-            st.session_state.user_id = None
-            st.rerun()
+                            
+    st.write("")
+    if st.button("⬅️ Back to Home"):
+        st.session_state.page = "home"
+        st.rerun()
 
-# --- ROUTING ---
-if not st.session_state.role:
-    st.title("🤝 Welcome to Synthetic Child Matcher")
-    st.markdown("""
-    This platform uses AI and data matching to pair children in the welfare system with prospective families based on compatibility.
-    
-    ⬅️ **Please log in using the sidebar** to view your personalized dashboard.
-    """)
-elif st.session_state.role == "Admin":
-    admin_analysis.render(scores_df, children_df, families_df)
-elif st.session_state.role == "Parent":
-    parent_view.render(scores_df, families_df, st.session_state.user_id)
+elif st.session_state.page == "app":
+    if st.session_state.role == "Admin":
+        admin_analysis.render(scores_df, children_df, families_df)
+    elif st.session_state.role == "Parent":
+        parent_view.render(scores_df, families_df, st.session_state.user_id)

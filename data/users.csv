@@ -1,7 +1,2 @@
 username,password,role,family_id
-sharma01,pass123,Parent,F001
-patel02,pass123,Parent,F002
-gupta03,pass123,Parent,F003
-singh04,pass123,Parent,F004
-reddy05,pass123,Parent,F005
 admin,admin123,Admin,
