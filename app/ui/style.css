@@ -7,57 +7,82 @@ footer {visibility: hidden;}
 h1, h2, h3 {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     font-weight: 700 !important;
+    color: #04080f !important;
+}
+p, span, div {
+    color: #04080f;
 }
 
 /* 3. Style the Sidebar */
 [data-testid="stSidebar"] {
-    border-right: 1px solid #333333;
+    border-right: 1px solid #bbd1ea;
+    background-color: #dae3e5 !important;
 }
 
 /* 4. Beautiful Cards for the Expanders */
 [data-testid="stExpander"] {
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    border: 1px solid #333333 !important;
+    box-shadow: 0 4px 15px rgba(4, 8, 15, 0.05);
+    border: 1px solid #a1c6ea !important;
     margin-bottom: 1rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: #ffffff;
 }
 
 [data-testid="stExpander"]:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 20px rgba(4, 8, 15, 0.1);
 }
 
 /* 5. Modern Gradient Buttons */
 .stButton > button {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #507dbc 0%, #a1c6ea 100%);
     color: white !important;
     border: none !important;
     border-radius: 8px;
     font-weight: 600;
     padding: 0.6rem 1.2rem;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
+    box-shadow: 0 4px 6px rgba(80, 125, 188, 0.25);
 }
 
 .stButton > button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.35);
-    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    box-shadow: 0 6px 12px rgba(80, 125, 188, 0.35);
+    background: linear-gradient(135deg, #a1c6ea 0%, #507dbc 100%);
 }
 
 .stButton > button:active {
     transform: translateY(0px);
 }
 
+/* Secondary Button overrides (Streamlit primary vs secondary) */
+.stButton > button[kind="secondary"] {
+    background: white;
+    color: #507dbc !important;
+    border: 1px solid #507dbc !important;
+    box-shadow: none;
+}
+.stButton > button[kind="secondary"]:hover {
+    background: #dae3e5;
+    color: #507dbc !important;
+}
+
+
 /* 6. Custom styling for the Progress Bars */
 .stProgress > div > div > div > div {
-    background-image: linear-gradient(to right, #4ade80, #3b82f6);
+    background-image: linear-gradient(to right, #a1c6ea, #507dbc);
 }
 
 /* 7. Info/Alert Box overrides */
 .stAlert {
     border-radius: 10px;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #bbd1ea;
+    box-shadow: 0 2px 8px rgba(4, 8, 15, 0.05);
+    background-color: #f7f9fc;
+}
+
+/* Sidebar overrides */
+section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span {
+    color: #04080f !important;
 }

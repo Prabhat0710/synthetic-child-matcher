@@ -82,23 +82,132 @@ if st.session_state.role:
 
 # --- ROUTING ---
 if st.session_state.page == "home":
-    # 1. Hero Section
-    st.title("💙 Care Map")
-    st.markdown("## Real families. Brighter tomorrows.")
-    st.markdown("### Matching changes lives — including yours.")
-    st.markdown("We connect children with safe, loving, and permanent families. Whether you are looking to adopt, foster, or support, you are part of a bigger story.")
+    st.markdown("""
+        <style>
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #bbd1ea;
+            margin-bottom: 4rem;
+        }
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo-icon {
+            font-size: 2.4rem; padding-top: 5px;
+        }
+        .logo-text {
+            line-height: normal; padding-top: 5px;
+        }
+        .logo-text strong {
+            font-size: 1.8rem; display: inline-block;
+            color: #04080f;
+        }
+        .logo-text small {
+            font-size: 0.65rem;
+            color: #507dbc;
+            letter-spacing: 0.05em;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #507dbc;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .nav-links a:hover {
+            color: #04080f;
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .get-involved-btn {
+            background-color: #507dbc;
+            color: white !important;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .get-involved-btn:hover {
+            background-color: #a1c6ea;
+            color: #04080f !important;
+        }
+        
+        /* Hero Section */
+        .hero-subtitle {
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #507dbc;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .hero-title {
+            font-size: 3.2rem !important;
+            line-height: 1.1 !important;
+            color: #04080f !important;
+            margin-bottom: 1.5rem !important;
+            font-weight: 700 !important;
+        }
+        .hero-desc {
+            font-size: 1.1rem;
+            color: #04080f;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        
+        /* Hide padding above header */
+        .block-container {
+            padding-top: 1rem;
+        }
+        </style>
+        
+        <div class="header-container">
+            <div class="logo-group">
+                <div class="logo-icon">💙</div>
+                <div class="logo-text">
+                    <strong>Care Map</strong><br>
+                    <small>ADOPTION SERVICES</small>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="#">Home</a>
+                <a href="#about-section">About</a>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
     
-    st.write("")
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("Welcome — Start Your Journey", type="primary", use_container_width=True):
-            st.session_state.page = "login"
-            st.rerun()
+    col1, spacer, col2 = st.columns([1, 0.1, 1.2])
+    with col1:
+        st.markdown('<div class="hero-subtitle">REAL FAMILIES. BRIGHTER TOMORROWS.</div>', unsafe_allow_html=True)
+        st.markdown('<h1 class="hero-title">Adoption changes<br>lives — including<br>yours.</h1>', unsafe_allow_html=True)
+        st.markdown('<p class="hero-desc">We connect children with safe, loving, and permanent families. Whether you are looking to adopt, foster, or support, you are part of a bigger story.</p>', unsafe_allow_html=True)
+        
+        btn_col1, btn_col2 = st.columns([1.5, 1])
+        with btn_col1:
+            if st.button("Start Your Adoption Journey →", type="primary", use_container_width=True):
+                st.session_state.page = "login"
+                st.rerun()
             
+    with col2:
+        st.image("app/ui/hero_image_cropped.png", use_container_width=True)
+
     st.write("")
     st.divider()
     
-    # 2. About Section
+    st.markdown('<div id="about-section" style="padding-top: 4rem;"></div>', unsafe_allow_html=True)
     st.markdown("### About Care Map")
     st.markdown("**What are we building?**")
     st.markdown("Care Map is an intelligent, data-driven matching platform designed to bridge the gap between children in the welfare system and prospective families. By analyzing complex capacity profiles and detailed child needs, our system provides precise, actionable recommendations to welfare agencies and parents alike.")
